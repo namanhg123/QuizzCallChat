@@ -10,6 +10,7 @@ import {
   AdminChannelManager,
   Profile,
 } from "./components";
+import QuizDashboard from "./components/QuizDashboard";
 
 import "stream-chat-react/dist/css/index.css";
 import "./App.css";
@@ -46,9 +47,10 @@ const App = () => {
   const [createType, setCreateType] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [viewMode, setViewMode] = useState("chat"); // "chat", "admin", or "profile"
+  const [viewMode, setViewMode] = useState("chat"); // "chat", "admin", "profile", or "quiz"
   const [activeAdminTab, setActiveAdminTab] = useState("users"); // "users" or "channels"
   const [activeProfileTab, setActiveProfileTab] = useState("info"); // "info" or "password"
+  const [isQuizMode, setIsQuizMode] = useState(false); // Quiz mode state
 
   if (!authToken) return <Auth />;
   return (
@@ -66,6 +68,8 @@ const App = () => {
           setActiveAdminTab={setActiveAdminTab}
           activeProfileTab={activeProfileTab}
           setActiveProfileTab={setActiveProfileTab}
+          isQuizMode={isQuizMode}
+          setIsQuizMode={setIsQuizMode}
         />
         {viewMode === "chat" ? (
           <ChannelContainer
@@ -75,6 +79,7 @@ const App = () => {
             setIsEditing={setIsEditing}
             createType={createType}
             userRole={userRole}
+            isQuizMode={isQuizMode}
           />
         ) : viewMode === "admin" ? (
           <AdminChannelManager activeAdminTab={activeAdminTab} />
@@ -83,6 +88,8 @@ const App = () => {
             activeProfileTab={activeProfileTab}
             onBack={() => setViewMode("chat")}
           />
+        ) : viewMode === "quiz" ? (
+          <QuizDashboard userRole={userRole} />
         ) : null}
       </Chat>
     </div>

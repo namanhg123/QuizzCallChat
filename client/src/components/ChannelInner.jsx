@@ -12,6 +12,7 @@ import {
 import Cookies from "universal-cookie";
 
 import { ChannelInfo } from "../assets";
+import VideoCall from "./meeting/VideoCall";
 
 const cookies = new Cookies();
 
@@ -19,7 +20,11 @@ export const GiphyContext = React.createContext({});
 
 const ChannelInner = ({ setIsEditing }) => {
   const [giphyState, setGiphyState] = useState(false);
+  const [showVideoCall, setShowVideoCall] = useState(false);
+  const [isMeetingOngoing, setIsMeetingOngoing] = useState(false); // Track meeting status
   const { sendMessage } = useChannelActionContext();
+  const { channel } = useChannelStateContext();
+  const { client } = useChatContext();
 
   const overrideSubmitHandler = (message) => {
     let updatedMessage = {
@@ -42,9 +47,26 @@ const ChannelInner = ({ setIsEditing }) => {
 
   return (
     <GiphyContext.Provider value={{ giphyState, setGiphyState }}>
+      {showVideoCall && (
+        <VideoCall
+          channel={channel}
+          onClose={() => {
+            setShowVideoCall(false);
+            setIsMeetingOngoing(false); // Update meeting status when call ends
+          }}
+          currentUser={client.user}
+        />
+      )}
       <div style={{ display: "flex", width: "100%" }}>
         <Window>
-          <TeamChannelHeader setIsEditing={setIsEditing} />
+          <TeamChannelHeader
+            setIsEditing={setIsEditing}
+            onStartVideoCall={() => {
+              setShowVideoCall(true);
+              setIsMeetingOngoing(true); // Update meeting status when call starts
+            }}
+            isMeetingOngoing={isMeetingOngoing} // Pass meeting status to header
+          />
           <MessageList />
           <MessageInput overrideSubmitHandler={overrideSubmitHandler} />
         </Window>
@@ -54,7 +76,11 @@ const ChannelInner = ({ setIsEditing }) => {
   );
 };
 
-const TeamChannelHeader = ({ setIsEditing }) => {
+const TeamChannelHeader = ({
+  setIsEditing,
+  onStartVideoCall,
+  isMeetingOngoing,
+}) => {
   const { channel } = useChannelStateContext();
   const { client } = useChatContext();
   const userRole = cookies.get("role") || "student";
@@ -92,7 +118,10 @@ const TeamChannelHeader = ({ setIsEditing }) => {
 
     return (
       <div className="team-channel-header__channel-wrapper">
-        <p className="team-channel-header__name"># {channel.data.name}</p>
+        <p className="team-channel-header__name">
+          <span className="channel-hash-icon">#</span>
+          {channel.data.name}
+        </p>
         {/* Chỉ Admin và Teacher mới có nút Edit channel */}
         {(userRole === "admin" || userRole === "teacher") && (
           <span style={{ display: "flex" }} onClick={() => setIsEditing(true)}>
@@ -106,6 +135,39 @@ const TeamChannelHeader = ({ setIsEditing }) => {
   return (
     <div className="team-channel-header__container">
       <MessagingHeader />
+      <div className="team-channel-header__right">
+        <div
+          className="team-channel-header__icon-button"
+          onClick={onStartVideoCall}
+          title={isMeetingOngoing ? "Join Meeting" : "Start Meeting"}
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15 10L20 6V18L15 14V10Z"
+              stroke="#6264A7"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M4 8H11C12.1046 8 13 8.89543 13 10V14C13 15.1046 12.1046 16 11 16H4C2.89543 16 2 15.1046 2 14V10C2 8.89543 2.89543 8 4 8Z"
+              stroke="#6264A7"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <div className="team-channel-header__icon-button" title="Channel Info">
+          <ChannelInfo color="#6264A7" />
+        </div>
+      </div>
     </div>
   );
 };

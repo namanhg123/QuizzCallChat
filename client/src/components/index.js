@@ -14,3 +14,14 @@ export { default as ResultsDropdown } from "./ResultsDropdown";
 export { default as AdminPanel } from "./AdminPanel";
 export { default as AdminChannelManager } from "./AdminChannelManager";
 export { default as Profile } from "./Profile";
+export { default as QuizDashboard } from "./QuizDashboard";
+export { default as ChannelQuizView } from "./ChannelQuizView";
+export { default as QuizEditor } from "./QuizEditor";
+export { default as QuizTaker } from "./QuizTaker";
+export { default as QuizResults } from "./QuizResults";
+export { default as MyResults } from "./MyResults";
+
+// Video Call components
+export { default as VideoCall } from "./meeting/VideoCall";
+export { default as VideoGrid } from "./meeting/VideoGrid";
+export { default as VideoControls } from "./meeting/VideoControls";

@@ -659,7 +659,7 @@ const AdminChannelManager = ({ activeAdminTab }) => {
         <div className="admin-manager-content">
           {activeAdminTab === "users" && (
             <div className="users-section">
-              <div className="users-stats">
+              {/* <div className="users-stats">
                 <div className="stat-card">
                   <h3>Total Users</h3>
                   <p>{users.length}</p>
@@ -676,7 +676,7 @@ const AdminChannelManager = ({ activeAdminTab }) => {
                   <h3>Students</h3>
                   <p>{users.filter((u) => u.role === "student").length}</p>
                 </div>
-              </div>
+              </div> */}
 
               <div className="admin-content-container">
                 {/* Users List */}
@@ -740,7 +740,7 @@ const AdminChannelManager = ({ activeAdminTab }) => {
 
           {activeAdminTab === "channels" && (
             <div className="channels-section">
-              <div className="channels-stats">
+              {/* <div className="channels-stats">
                 <div className="stat-card">
                   <h3>Total Channels</h3>
                   <p>{channels.length}</p>
@@ -766,7 +766,7 @@ const AdminChannelManager = ({ activeAdminTab }) => {
                     )}
                   </p>
                 </div>
-              </div>
+              </div> */}
 
               <div className="channels-grid">
                 {channels.map((channel) => (

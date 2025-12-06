@@ -51,18 +51,15 @@ const Auth = () => {
       const URL = "http://localhost:5000/auth";
 
       const {
-        data: {
-          token,
-          userId,
-          fullName,
-          phoneNumber,
-          avatarURL,
-          role,
-        },
+        data: { token, userId, fullName, phoneNumber, avatarURL, role },
       } = await axios.post(`${URL}/${isSignup ? "/signup" : "/login"}`, {
         username: form.username,
         password: form.password,
-        ...(isSignup && { fullName: form.fullName, phoneNumber: form.phoneNumber, avatarURL: form.avatarURL }),
+        ...(isSignup && {
+          fullName: form.fullName,
+          phoneNumber: form.phoneNumber,
+          avatarURL: form.avatarURL,
+        }),
       });
 
       // Lưu TẤT CẢ thông tin vào cookies
@@ -122,7 +119,12 @@ const Auth = () => {
           {error && (
             <div className="auth__form-container_fields-error">
               <p
-                style={{ color: "red", fontSize: "14px", marginBottom: "10px" }}
+                style={{
+                  color: "#ff4d4f",
+                  fontSize: "14px",
+                  marginBottom: "10px",
+                  textAlign: "center",
+                }}
               >
                 {error}
               </p>
@@ -221,9 +223,7 @@ const Auth = () => {
           </div>
         </div>
       </div>
-      <div className="auth__form-container_image">
-        <img src={signinImage} alt="sign in" />
-      </div>
+      {/* Image container removed as per new design */}
     </div>
   );
 };

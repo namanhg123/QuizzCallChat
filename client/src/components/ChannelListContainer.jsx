@@ -23,22 +23,21 @@ const SideBar = ({
   closeAdminPanel,
   openProfilePanel,
   isProfileMode,
+  openQuizPanel,
+  isQuizMode,
+  theme,
+  toggleTheme,
 }) => (
   <div
     className="channel-list__sidebar"
     style={{ display: "flex", flexDirection: "column", height: "100%" }} // ensure column layout full height
   >
-    <div className="channel-list__sidebar__icon2">
-      <div
-        className="icon1__inner"
-        onClick={openProfilePanel}
-        title="Profile"
-        style={{
-          backgroundColor: isProfileMode
-            ? "rgba(255, 255, 255, 0.2)"
-            : "transparent",
-        }}
-      >
+    <div
+      className={`channel-list__sidebar__icon2 ${
+        isProfileMode ? "selected" : ""
+      }`}
+    >
+      <div className="icon1__inner" onClick={openProfilePanel} title="Profile">
         <img src={ProfileIcon} alt="Profile" width="30" />
       </div>
     </div>
@@ -50,43 +49,36 @@ const SideBar = ({
     </div>
 
     {/* Chat button - luôn hiện để chuyển về chat mode */}
-    <div className="channel-list__sidebar__icon2">
-      <div
-        className="icon1__inner"
-        onClick={closeAdminPanel}
-        title="Chat"
-        style={{
-          backgroundColor:
-            !isAdminMode && !isProfileMode
-              ? "rgba(255, 255, 255, 0.2)"
-              : "transparent",
-        }}
-      >
+    <div
+      className={`channel-list__sidebar__icon2 ${
+        !isAdminMode && !isProfileMode && !isQuizMode ? "selected" : ""
+      }`}
+    >
+      <div className="icon1__inner" onClick={closeAdminPanel} title="Chat">
         <span style={{ color: "#fff", fontSize: "24px" }}>💬</span>
       </div>
     </div>
 
-    {/* Quiz button - chỉ hiện cho Teacher và Admin */}
-    {(userRole === "teacher" || userRole === "admin") && (
-      <div className="channel-list__sidebar__icon2">
-        <div className="icon1__inner" title="Quiz">
-          <img src={QuzzIcon} alt="Quizz" width="30" />
-        </div>
+    {/* Quiz button - hiện cho tất cả roles */}
+    <div
+      className={`channel-list__sidebar__icon2 ${isQuizMode ? "selected" : ""}`}
+    >
+      <div className="icon1__inner" title="Quiz" onClick={openQuizPanel}>
+        <img src={QuzzIcon} alt="Quizz" width="30" />
       </div>
-    )}
+    </div>
 
     {/* Admin Panel button - chỉ hiện khi role là admin */}
     {userRole === "admin" && (
-      <div className="channel-list__sidebar__icon2">
+      <div
+        className={`channel-list__sidebar__icon2 ${
+          isAdminMode ? "selected" : ""
+        }`}
+      >
         <div
           className="icon1__inner"
           onClick={openAdminPanel}
           title="Admin Panel"
-          style={{
-            backgroundColor: isAdminMode
-              ? "rgba(255, 255, 255, 0.2)"
-              : "transparent",
-          }}
         >
           <AdminIcon width="30" height="30" />
         </div>
@@ -95,6 +87,17 @@ const SideBar = ({
 
     {/* Toggle button fixed near bottom */}
     <div style={{ marginTop: "auto" }}>
+      <div
+        className="channel-list__sidebar__icon2"
+        onClick={toggleTheme}
+        title={
+          theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"
+        }
+      >
+        <div className="icon1__inner" style={{ fontSize: "20px" }}>
+          {theme === "light" ? "🌙" : "☀️"}
+        </div>
+      </div>
       <div className="channel-list__sidebar__icon3">
         <div
           className="icon1__inner"
@@ -214,6 +217,10 @@ const ChannelListContent = ({
   isProfileMode,
   activeProfileTab,
   setActiveProfileTab,
+  openQuizPanel,
+  isQuizMode,
+  theme,
+  toggleTheme,
 }) => {
   const { client } = useChatContext();
 
@@ -249,6 +256,10 @@ const ChannelListContent = ({
         closeAdminPanel={closeAdminPanel}
         openProfilePanel={openProfilePanel}
         isProfileMode={isProfileMode}
+        openQuizPanel={openQuizPanel}
+        isQuizMode={isQuizMode}
+        theme={theme}
+        toggleTheme={toggleTheme}
       />
       {/* Khi collapsed: chỉ hiển thị sidebar icons, giữ layout ổn định */}
       {!isCollapsed && (
@@ -297,31 +308,34 @@ const ChannelListContent = ({
                   />
                 )}
               />
-              <ChannelList
-                filters={filters}
-                channelRenderFilterFn={customChannelMessagingFilter}
-                List={(listProps) => (
-                  <TeamChannelList
-                    {...listProps}
-                    type="messaging"
-                    isCreating={isCreating}
-                    setIsCreating={setIsCreating}
-                    setCreateType={setCreateType}
-                    setIsEditing={setIsEditing}
-                    setToggleContainer={setToggleContainer}
-                    userRole={userRole}
-                  />
-                )}
-                Preview={(previewProps) => (
-                  <TeamChannelPreview
-                    {...previewProps}
-                    setIsCreating={setIsCreating}
-                    setIsEditing={setIsEditing}
-                    setToggleContainer={setToggleContainer}
-                    type="messaging"
-                  />
-                )}
-              />
+              {/* Chỉ hiển thị Direct Messages khi KHÔNG ở quiz mode */}
+              {!isQuizMode && (
+                <ChannelList
+                  filters={filters}
+                  channelRenderFilterFn={customChannelMessagingFilter}
+                  List={(listProps) => (
+                    <TeamChannelList
+                      {...listProps}
+                      type="messaging"
+                      isCreating={isCreating}
+                      setIsCreating={setIsCreating}
+                      setCreateType={setCreateType}
+                      setIsEditing={setIsEditing}
+                      setToggleContainer={setToggleContainer}
+                      userRole={userRole}
+                    />
+                  )}
+                  Preview={(previewProps) => (
+                    <TeamChannelPreview
+                      {...previewProps}
+                      setIsCreating={setIsCreating}
+                      setIsEditing={setIsEditing}
+                      setToggleContainer={setToggleContainer}
+                      type="messaging"
+                    />
+                  )}
+                />
+              )}
             </>
           )}
 
@@ -353,6 +367,8 @@ const ChannelListContainer = ({
   setActiveAdminTab,
   activeProfileTab,
   setActiveProfileTab,
+  isQuizMode,
+  setIsQuizMode,
 }) => {
   const [toggleContainer, setToggleContainer] = useState(false);
   // new collapse state: true => thu gọn (chỉ show icons), false => full list
@@ -361,6 +377,16 @@ const ChannelListContainer = ({
   const [isAdminMode, setIsAdminMode] = useState(false);
   // Profile mode state
   const [isProfileMode, setIsProfileMode] = useState(false);
+  // Theme state
+  const [theme, setTheme] = useState("light");
+
+  React.useEffect(() => {
+    document.body.setAttribute("data-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
+  };
 
   const toggleSidebar = () => setIsCollapsed((prev) => !prev);
 
@@ -368,6 +394,7 @@ const ChannelListContainer = ({
     if (userRole === "admin") {
       setIsAdminMode(true);
       setIsProfileMode(false);
+      setIsQuizMode(false);
       setViewMode("admin");
     }
   };
@@ -375,12 +402,21 @@ const ChannelListContainer = ({
   const openProfilePanel = () => {
     setIsProfileMode(true);
     setIsAdminMode(false);
+    setIsQuizMode(false);
     setViewMode("profile");
+  };
+
+  const openQuizPanel = () => {
+    setIsQuizMode(true);
+    setIsAdminMode(false);
+    setIsProfileMode(false);
+    setViewMode("chat"); // Vẫn ở chat view để hiển thị channel list
   };
 
   const closeAdminPanel = () => {
     setIsAdminMode(false);
     setIsProfileMode(false);
+    setIsQuizMode(false);
     setViewMode("chat");
   };
 
@@ -406,6 +442,10 @@ const ChannelListContainer = ({
           isProfileMode={isProfileMode}
           activeProfileTab={activeProfileTab}
           setActiveProfileTab={setActiveProfileTab}
+          openQuizPanel={openQuizPanel}
+          isQuizMode={isQuizMode}
+          theme={theme}
+          toggleTheme={toggleTheme}
         />
       </div>
 
@@ -439,6 +479,10 @@ const ChannelListContainer = ({
           isProfileMode={isProfileMode}
           activeProfileTab={activeProfileTab}
           setActiveProfileTab={setActiveProfileTab}
+          openQuizPanel={openQuizPanel}
+          isQuizMode={isQuizMode}
+          theme={theme}
+          toggleTheme={toggleTheme}
         />
       </div>
     </>

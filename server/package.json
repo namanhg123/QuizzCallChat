@@ -21,6 +21,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.3",
     "nodemon": "^2.0.12",
+    "socket.io": "^4.8.1",
     "stream-chat": "^4.1.0",
     "twilio": "^3.67.1"
   }
