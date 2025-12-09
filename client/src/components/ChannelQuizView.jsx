@@ -7,6 +7,8 @@ import QuizEditor from "./QuizEditor";
 import QuizTaker from "./QuizTaker";
 import QuizResults from "./QuizResults";
 import MyResults from "./MyResults";
+import QuizMaker from "./QuizMaker";
+import geminiService from "../services/geminiService";
 
 const cookies = new Cookies();
 const API_URL = "http://localhost:5000";
@@ -16,7 +18,7 @@ const ChannelQuizView = ({ userRole }) => {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [viewMode, setViewMode] = useState("list"); // list, create, edit, take, results
+  const [viewMode, setViewMode] = useState("list"); // list, create, edit, take, results, generate
   const [selectedQuiz, setSelectedQuiz] = useState(null);
 
   // Form state
@@ -100,6 +102,85 @@ const ChannelQuizView = ({ userRole }) => {
       fetchChannelQuizzes();
     } catch (err) {
       setError(err.response?.data?.message || "Error deleting quiz");
+    }
+  };
+
+  const handleGenerateQuiz = async ({ topics, questionCount, difficulty }) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      console.log("[CHANNEL QUIZ] Generating quiz with:", {
+        topics,
+        questionCount,
+        difficulty,
+      });
+
+      // Step 1: Call Gemini API to generate quiz questions
+      const response = await geminiService.generateQuiz({
+        topics,
+        questionCount,
+        difficulty,
+      });
+
+      console.log("[CHANNEL QUIZ] Quiz generated:", {
+        title: response.title,
+        questionCount: response.questions?.length,
+      });
+
+      if (!response.questions || response.questions.length === 0) {
+        throw new Error("No questions were generated. Please try again.");
+      }
+
+      // Step 2: Prepare quiz data for saving
+      const timestamp = Date.now();
+      const quizData = {
+        quizId: `AI_${channel.id}_${timestamp}`,
+        title: response.title || `AI Quiz: ${topics.slice(0, 2).join(", ")}`,
+        timeLimit: Math.max(questionCount * 60, 300), // At least 5 minutes or 1 minute per question
+        channelId: channel.id,
+        channelName:
+          channel.data?.name || channel.data?.id || "Unknown Channel",
+        questions: response.questions,
+      };
+
+      console.log("[CHANNEL QUIZ] Saving quiz:", quizData.quizId);
+
+      // Step 3: Save the generated quiz to the database
+      const saveResult = await geminiService.saveGeneratedQuiz(quizData);
+
+      console.log("[CHANNEL QUIZ] Quiz saved successfully:", {
+        quizId: saveResult.quiz?.quizId,
+        questionsCount: saveResult.questionsCount,
+      });
+
+      // Success message with details
+      alert(
+        `Quiz generated successfully!\n\n` +
+          `Title: ${quizData.title}\n` +
+          `Questions: ${saveResult.questionsCount}/${saveResult.totalRequested}\n` +
+          `Quiz ID: ${saveResult.quiz?.quizId}`
+      );
+
+      setViewMode("list");
+      await fetchChannelQuizzes();
+    } catch (err) {
+      console.error("[CHANNEL QUIZ] Error generating quiz:", err);
+
+      // Extract error message
+      const errorMessage =
+        err.message ||
+        err.response?.data?.message ||
+        "Error generating quiz with AI";
+
+      setError(errorMessage);
+
+      // Show detailed error message
+      alert(
+        `Failed to generate quiz\n\nError: ${errorMessage}\n\nPlease try again.`
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -247,21 +328,41 @@ const ChannelQuizView = ({ userRole }) => {
     );
   }
 
+  // Show Quiz Maker (Generate mode)
+  if (viewMode === "generate") {
+    return (
+      <div className="channel-quiz-view">
+        <QuizMaker
+          onBack={() => setViewMode("list")}
+          onGenerate={handleGenerateQuiz}
+        />
+      </div>
+    );
+  }
+
   // List view
   return (
     <div className="channel-quiz-view">
       <div className="quiz-header">
         <h2>Quizzes in {channel.data?.name || "This Channel"}</h2>
         {(userRole === "teacher" || userRole === "admin") && (
-          <button
-            className="btn-create"
-            onClick={() => {
-              setViewMode("create");
-              setQuizForm({ quizId: "", title: "", timeLimit: 0 });
-            }}
-          >
-            + Create New Quiz
-          </button>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              className="btn-create"
+              onClick={() => setViewMode("generate")}
+            >
+              Generate Quiz
+            </button>
+            <button
+              className="btn-create"
+              onClick={() => {
+                setViewMode("create");
+                setQuizForm({ quizId: "", title: "", timeLimit: 0 });
+              }}
+            >
+              + Create New Quiz
+            </button>
+          </div>
         )}
       </div>
 

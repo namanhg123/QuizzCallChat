@@ -6,7 +6,7 @@ import "./AdminChannelManager.css";
 
 const cookies = new Cookies();
 
-const AdminChannelManager = ({ activeAdminTab }) => {
+const AdminChannelManager = ({ activeAdminTab, isCollapsed }) => {
   const { client } = useChatContext();
   const [users, setUsers] = useState([]);
   const [channels, setChannels] = useState([]);
@@ -399,13 +399,12 @@ const AdminChannelManager = ({ activeAdminTab }) => {
               </div>
 
               <div className="user-info-grid">
-                
                 <div className="info-group">
                   <label>UserName:</label>
                   <span>{selectedUserDetails.username}</span>
                 </div>
 
-                  {/* <div className="info-group">
+                {/* <div className="info-group">
                   <label>UserName(Debug):</label>
                   {editMode ? (
                     <input
@@ -439,7 +438,9 @@ const AdminChannelManager = ({ activeAdminTab }) => {
 
                 <div className="info-group">
                   <label>Email:</label>
-                  <span>{selectedUserDetails.email || "Chưa Liên kết Email"}</span>
+                  <span>
+                    {selectedUserDetails.email || "Chưa Liên kết Email"}
+                  </span>
                 </div>
 
                 <div className="info-group">
@@ -474,9 +475,10 @@ const AdminChannelManager = ({ activeAdminTab }) => {
                     </select>
                   ) : (
                     <span
-                      className={`role-display role-${selectedUserDetails.role}`}
+                      className={`role-text role-${selectedUserDetails.role}`}
                     >
-                      {selectedUserDetails.role}
+                      {selectedUserDetails.role.charAt(0).toUpperCase() +
+                        selectedUserDetails.role.slice(1)}
                     </span>
                   )}
                 </div>
@@ -622,6 +624,20 @@ const AdminChannelManager = ({ activeAdminTab }) => {
                   </div>
                 </div>
               </div>
+
+              <div className="danger-zone">
+
+                <p className="danger-note">
+                  Xóa người dùng này sẽ xóa vĩnh viễn tài khoản và tất cả dữ
+                  liệu liên quan. Hành động này không thể hoàn tác.
+                </p>
+                <button
+                  className="delete-user-btn"
+                  onClick={() => handleDeleteUser(selectedUserDetails.id)}
+                >
+                  Delete User
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -630,7 +646,9 @@ const AdminChannelManager = ({ activeAdminTab }) => {
   };
 
   return (
-    <div className="admin-manager-container">
+    <div
+      className={`admin-manager-container ${isCollapsed ? "collapsed" : ""}`}
+    >
       <div className="admin-manager-header">
         <h2>Admin Management Panel</h2>
         <div className="admin-tabs">

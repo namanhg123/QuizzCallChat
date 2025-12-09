@@ -8,6 +8,7 @@ const TeamChannelPreview = ({
   setToggleContainer,
   channel,
   type,
+  isQuizMode,
 }) => {
   const { channel: activeChannel, client } = useChatContext();
 
@@ -45,8 +46,12 @@ const TeamChannelPreview = ({
           : "channel-preview__wrapper"
       }
       onClick={() => {
-        setIsCreating(false);
-        setIsEditing(false);
+        // Khi ở quiz mode, chỉ chuyển channel mà không tắt quiz mode
+        // Khi không ở quiz mode, hoạt động bình thường
+        if (!isQuizMode) {
+          setIsCreating(false);
+          setIsEditing(false);
+        }
         setActiveChannel(channel);
         if (setToggleContainer) {
           setToggleContainer((prevState) => !prevState);

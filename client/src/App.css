@@ -16,24 +16,6 @@
   --primary-color-alpha: #6264a71a;
 }
 
-[data-theme="dark"] {
-  /* Dark Mode Variables */
-  --bg-app-bar: #1b1a19;
-  --bg-list-pane: #292929;
-  --bg-chat-header: #141414;
-  --bg-message-canvas: #141414;
-  --bg-input: #292929;
-  --bg-hover: #333333;
-  --bg-selected: #3b3a39;
-  --text-primary: #ffffff;
-  --text-secondary: #a6a6a6;
-  --border-color: #3d3d3d;
-  --primary-color: #7f85f5;
-  --icon-inactive: #a6a6a6;
-  --icon-active: #7f85f5;
-  --primary-color-alpha: #7f85f51a;
-}
-
 /* Admin Menu Styles */
 .admin-menu-list {
   flex: 1;
@@ -49,17 +31,19 @@
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.2s ease;
-  color: #ffffff;
+  color: #2c2c2c;
   font-size: 14px;
   font-weight: 500;
 }
 
 .admin-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(102, 100, 167, 0.1);
+  color: #1a1a1a;
 }
 
 .admin-menu-item.active {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(102, 100, 167, 0.15);
+  color: #6264a7;
   font-weight: 600;
 }
 
@@ -278,9 +262,10 @@ body {
   display: flex;
   flex: 1;
   /* height: 800px; */
-  height: 100%;
+  height: 100vh;
   /* border-radius: 16px; */
   box-shadow: rgba(0, 0, 0, 0.33) 0px 1px 4px 0px;
+  overflow: hidden;
 }
 
 .str-chat-channel-list {
@@ -378,8 +363,15 @@ body {
 }
 
 .channel__container {
-  height: 100%;
+  height: 100vh;
   width: 100%;
+  margin-left: 312px;
+  overflow-y: auto;
+  transition: margin-left 0.4s ease;
+}
+
+.channel__container.collapsed {
+  margin-left: 72px;
 }
 
 .str-chat__thread {
@@ -451,8 +443,13 @@ body {
 .channel-list__container {
   display: flex;
   /* height: 800px; */
-  height: 100%;
+  height: 100vh;
   box-shadow: inset 1px 0px 0px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  transition: width 0.4s ease;
 }
 
 .channel-list__sidebar {
@@ -461,6 +458,8 @@ body {
   box-shadow: 1px 0px 0px rgba(0, 0, 0, 0.1);
   /* border-top-left-radius: 16px; */
   /* border-bottom-left-radius: 16px; */
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .channel-list__sidebar__icon1 {
@@ -478,6 +477,8 @@ body {
   background: var(--bg-list-pane);
   width: 240px;
   border-right: 1px solid var(--border-color);
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .icon1__inner {
@@ -526,12 +527,6 @@ body {
 .channel-list__sidebar__icon2 svg,
 .channel-list__sidebar__icon2 span {
   filter: grayscale(100%) brightness(0.4);
-}
-
-[data-theme="dark"] .channel-list__sidebar__icon2 img,
-[data-theme="dark"] .channel-list__sidebar__icon2 svg,
-[data-theme="dark"] .channel-list__sidebar__icon2 span {
-  filter: grayscale(100%) brightness(1.5);
 }
 
 .channel-list__sidebar__icon2.selected img,
@@ -584,6 +579,7 @@ body {
 .channel-search__container {
   position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   padding-top: 16px;
@@ -630,15 +626,18 @@ body {
 .channel-search__results {
   position: absolute;
   height: fit-content;
-  width: 300px;
+  max-height: 400px;
+  width: 95%;
   background: #fff;
   border: 1px solid #e9e9ea;
   box-sizing: border-box;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
-  z-index: 10;
-  left: 230px;
-  top: 16px;
+  z-index: 9999;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 60px;
+  overflow-y: auto;
 }
 
 .channel-search__results-header {
@@ -2055,54 +2054,14 @@ div.rta__autocomplete.str-chat__emojisearch {
   color: var(--text-secondary) !important;
 }
 
-/* Dark Mode specific overrides for Stream Chat components */
-[data-theme="dark"] .str-chat__message-simple-text-inner {
-  color: #f0f0f0; /* Off-white for message text */
-}
-
-[data-theme="dark"] .str-chat__message-simple-name {
-  color: #ffffff;
-}
-
-[data-theme="dark"] .str-chat__message-simple-timestamp {
-  color: #a6a6a6;
-}
-
-[data-theme="dark"] .str-chat__message-replies-count-button {
-  color: #a6a6a6 !important; /* Light purple/gray for replies link in dark mode */
-}
-
-[data-theme="dark"] .str-chat__message-replies-count-button:hover {
-  color: #6cb8f6 !important;
-}
-
-[data-theme="dark"] .str-chat__input-flat-wrapper {
-  background-color: var(--bg-input);
-}
-
-[data-theme="dark"] .str-chat__fileupload-wrapper svg path {
-  fill: #d1d1d1; /* Toolbar icons light gray */
-}
-
-[data-theme="dark"] .emoji-mart {
-  background-color: #292929;
-  border-color: #3d3d3d;
-}
-
-[data-theme="dark"] .emoji-mart-category-label span {
-  background-color: #292929;
-  color: #ffffff;
-}
-
-[data-theme="dark"] .emoji-mart-search input {
-  background-color: #141414;
-  color: #ffffff;
-  border-color: #3d3d3d;
-}
-
 @media screen and (max-width: 960px) {
   .channel-list__container {
     display: none;
+  }
+
+  .channel__container {
+    margin-left: 0;
+    width: 100%;
   }
 
   .team-channerl-header_menu-icon {
@@ -2162,8 +2121,9 @@ div.rta__autocomplete.str-chat__emojisearch {
   }
 
   .channel-search__results {
-    top: 100%;
-    left: 5%;
+    top: 60px;
+    width: 90%;
+    max-height: 300px;
   }
 }
 
@@ -2189,114 +2149,28 @@ div.rta__autocomplete.str-chat__emojisearch {
   }
 }
 
-/* Dark Mode Message Hover & Actions */
-[data-theme="dark"] .str-chat__message-team:hover {
-  background: rgba(255, 255, 255, 0.08);
+/* Custom scrollbar styles */
+.channel-list__list__wrapper::-webkit-scrollbar,
+.channel__container::-webkit-scrollbar,
+.quiz-dashboard::-webkit-scrollbar {
+  width: 8px;
 }
 
-[data-theme="dark"] .str-chat__message-team-actions {
-  background: #2d2d2d;
+.channel-list__list__wrapper::-webkit-scrollbar-track,
+.channel__container::-webkit-scrollbar-track,
+.quiz-dashboard::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.channel-list__list__wrapper::-webkit-scrollbar-thumb,
+.channel__container::-webkit-scrollbar-thumb,
+.quiz-dashboard::-webkit-scrollbar-thumb {
+  background: #888;
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Dark Mode Thread Styles */
-[data-theme="dark"] .str-chat__thread {
-  background: #141414;
-  border-left: 1px solid #3d3d3d;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.25);
-}
-
-[data-theme="dark"] .custom-thread-header {
-  background: #141414;
-  box-shadow: none;
-  border-bottom: 1px solid #3d3d3d;
-}
-
-[data-theme="dark"] .custom-thread-header__left-title {
-  color: #ffffff;
-}
-
-[data-theme="dark"] .custom-thread-header__left-count {
-  color: #a6a6a6;
-}
-
-[data-theme="dark"] .close-thread-icon {
-  background: transparent;
-  border-radius: 4px;
-  padding: 4px;
-  transition: all 0.2s ease;
-}
-
-[data-theme="dark"] .close-thread-icon:hover {
-  background: #333333;
-}
-
-[data-theme="dark"] .close-thread-icon svg path {
-  fill: #ffffff;
-}
-
-[data-theme="dark"] .str-chat__thread-list .str-chat__message-team {
-  border-left: none;
-}
-
-[data-theme="dark"] .str-chat__thread-start {
-  border-top: 1px solid #3d3d3d;
-}
-
-/* Thread Input Dark Mode */
-[data-theme="dark"] .str-chat__thread .str-chat__input-flat-wrapper {
-  background: #141414;
-  border-top: 1px solid #3d3d3d;
-}
-
-[data-theme="dark"] .str-chat__thread .str-chat__input-flat {
-  background: #292929;
-  border: 1px solid #3d3d3d;
-}
-
-[data-theme="dark"] .str-chat__thread .str-chat__input-flat:focus-within {
-  border-color: #7f85f5;
-}
-
-[data-theme="dark"] .str-chat__thread .str-chat__textarea textarea {
-  color: #ffffff;
-}
-
-[data-theme="dark"]
-  .str-chat__thread
-  .str-chat__textarea
-  textarea::placeholder {
-  color: #8c8c8c;
-}
-
-[data-theme="dark"] .str-chat__thread .str-chat__send-button {
-  background: transparent;
-}
-
-[data-theme="dark"] .str-chat__thread .str-chat__send-button svg path {
-  fill: #7f85f5;
-}
-
-/* Dark Mode Message Content Bubbles */
-[data-theme="dark"] .str-chat__message-team-content--text {
-  background-color: #292929;
-  padding: 10px 14px;
-  border-radius: 8px;
-  margin-top: 4px;
-  width: fit-content;
-}
-
-[data-theme="dark"] .str-chat__message-team-content p {
-  color: #ffffff;
-}
-
-/* Differentiate Received vs Sent */
-[data-theme="dark"] .str-chat__message-team--received .str-chat__message-team-content--text {
-  background-color: #292929;
-}
-
-/* Sent messages (not received) - slightly lighter or different tone */
-[data-theme="dark"] .str-chat__message-team:not(.str-chat__message-team--received) .str-chat__message-team-content--text {
-  background-color: #3b3a39;
+.channel-list__list__wrapper::-webkit-scrollbar-thumb:hover,
+.channel__container::-webkit-scrollbar-thumb:hover,
+.quiz-dashboard::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

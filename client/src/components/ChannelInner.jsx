@@ -164,9 +164,6 @@ const TeamChannelHeader = ({
             />
           </svg>
         </div>
-        <div className="team-channel-header__icon-button" title="Channel Info">
-          <ChannelInfo color="#6264A7" />
-        </div>
       </div>
     </div>
   );

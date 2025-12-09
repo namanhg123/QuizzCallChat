@@ -91,19 +91,20 @@
 
 /* User Details Panel */
 .user-details-panel {
-  padding: 20px;
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .user-header {
+  flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 25px;
-  padding-bottom: 20px;
+  padding: 20px 20px 15px 20px;
   border-bottom: 2px solid #f0f0f0;
+  background: white;
 }
 
 .user-avatar-section {
@@ -159,10 +160,11 @@
 
 /* Message Display */
 .message {
+  margin: 15px 20px;
   padding: 12px 16px;
   border-radius: 8px;
-  margin-bottom: 20px;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .message.success {
@@ -179,10 +181,12 @@
 
 /* Tabs */
 .details-tabs {
+  flex-shrink: 0;
   display: flex;
   gap: 5px;
-  margin-bottom: 20px;
+  padding: 0 20px;
   border-bottom: 2px solid #f0f0f0;
+  background: white;
 }
 
 .tab-btn {
@@ -211,11 +215,13 @@
 .tab-content {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 20px 20px 20px;
 }
 
 /* Info Tab */
 .info-tab {
-  padding: 10px 0;
+  padding: 20px 0 10px 0;
 }
 
 .form-actions {
@@ -314,27 +320,18 @@
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.role-display {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
+/* Role text color only */
+.role-text {
   font-weight: 600;
-  display: inline-block;
 }
-
-.role-display.role-admin {
-  background: #e74c3c;
-  color: white;
+.role-text.role-admin {
+  color: #e74c3c;
 }
-
-.role-display.role-teacher {
-  background: #3498db;
-  color: white;
+.role-text.role-teacher {
+  color: #3498db;
 }
-
-.role-display.role-student {
-  background: #2ecc71;
-  color: white;
+.role-text.role-student {
+  color: #2ecc71;
 }
 
 .status-display.online {
@@ -349,7 +346,7 @@
 
 /* Security Tab */
 .security-tab {
-  padding: 10px 0;
+  padding: 20px 0 10px 0;
 }
 
 .security-section {
@@ -485,6 +482,51 @@
 .security-value.status-active {
   color: #2ecc71;
   font-weight: 600;
+}
+
+/* Danger Zone */
+.danger-zone {
+  background: #fff5f5;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 25px;
+  border: 2px solid #fee;
+}
+
+.danger-zone h4 {
+  margin: 0 0 10px 0;
+  color: #e74c3c;
+  font-size: 16px;
+}
+
+.danger-note {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.delete-user-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s;
+  width: 100%;
+}
+
+.delete-user-btn:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.delete-user-btn:active {
+  transform: translateY(0);
 }
 
 /* Selected row highlighting */

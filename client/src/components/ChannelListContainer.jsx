@@ -25,8 +25,6 @@ const SideBar = ({
   isProfileMode,
   openQuizPanel,
   isQuizMode,
-  theme,
-  toggleTheme,
 }) => (
   <div
     className="channel-list__sidebar"
@@ -38,7 +36,7 @@ const SideBar = ({
       }`}
     >
       <div className="icon1__inner" onClick={openProfilePanel} title="Profile">
-        <img src={ProfileIcon} alt="Profile" width="30" />
+        <span style={{ color: "#fff", fontSize: "28px" }}>👤</span>
       </div>
     </div>
 
@@ -55,7 +53,7 @@ const SideBar = ({
       }`}
     >
       <div className="icon1__inner" onClick={closeAdminPanel} title="Chat">
-        <span style={{ color: "#fff", fontSize: "24px" }}>💬</span>
+        <span style={{ color: "#fff", fontSize: "28px" }}>💬</span>
       </div>
     </div>
 
@@ -87,32 +85,25 @@ const SideBar = ({
 
     {/* Toggle button fixed near bottom */}
     <div style={{ marginTop: "auto" }}>
-      <div
-        className="channel-list__sidebar__icon2"
-        onClick={toggleTheme}
-        title={
-          theme === "light" ? "Switch to Dark Mode" : "Switch to Light Mode"
-        }
-      >
-        <div className="icon1__inner" style={{ fontSize: "20px" }}>
-          {theme === "light" ? "🌙" : "☀️"}
-        </div>
-      </div>
       <div className="channel-list__sidebar__icon3">
         <div
           className="icon1__inner"
           onClick={toggleSidebar}
           aria-label={isCollapsed ? "Open sidebar" : "Close sidebar"}
         >
-          <img
-            src={ArrowIcon}
-            alt={isCollapsed ? "Open sidebar" : "Close sidebar"}
-            width="25"
+          <span
             style={{
-              transform: isCollapsed ? "rotate(180deg)" : "none",
-              transition: "transform 0.4s ease",
+              fontSize: "40px",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transform: isCollapsed ? "rotate(360deg)" : "none",
+              transition: "transform 0.5s ease",
             }}
-          />
+          >
+            {isCollapsed ? "»" : "«"}
+          </span>
         </div>
       </div>
     </div>
@@ -219,8 +210,6 @@ const ChannelListContent = ({
   setActiveProfileTab,
   openQuizPanel,
   isQuizMode,
-  theme,
-  toggleTheme,
 }) => {
   const { client } = useChatContext();
 
@@ -258,8 +247,6 @@ const ChannelListContent = ({
         isProfileMode={isProfileMode}
         openQuizPanel={openQuizPanel}
         isQuizMode={isQuizMode}
-        theme={theme}
-        toggleTheme={toggleTheme}
       />
       {/* Khi collapsed: chỉ hiển thị sidebar icons, giữ layout ổn định */}
       {!isCollapsed && (
@@ -305,6 +292,7 @@ const ChannelListContent = ({
                     setIsEditing={setIsEditing}
                     setToggleContainer={setToggleContainer}
                     type="team"
+                    isQuizMode={isQuizMode}
                   />
                 )}
               />
@@ -332,6 +320,7 @@ const ChannelListContent = ({
                       setIsEditing={setIsEditing}
                       setToggleContainer={setToggleContainer}
                       type="messaging"
+                      isQuizMode={isQuizMode}
                     />
                   )}
                 />
@@ -369,24 +358,14 @@ const ChannelListContainer = ({
   setActiveProfileTab,
   isQuizMode,
   setIsQuizMode,
+  isCollapsed,
+  setIsCollapsed,
 }) => {
   const [toggleContainer, setToggleContainer] = useState(false);
-  // new collapse state: true => thu gọn (chỉ show icons), false => full list
-  const [isCollapsed, setIsCollapsed] = useState(false);
   // Admin mode state
   const [isAdminMode, setIsAdminMode] = useState(false);
   // Profile mode state
   const [isProfileMode, setIsProfileMode] = useState(false);
-  // Theme state
-  const [theme, setTheme] = useState("light");
-
-  React.useEffect(() => {
-    document.body.setAttribute("data-theme", theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
-  };
 
   const toggleSidebar = () => setIsCollapsed((prev) => !prev);
 
@@ -444,8 +423,8 @@ const ChannelListContainer = ({
           setActiveProfileTab={setActiveProfileTab}
           openQuizPanel={openQuizPanel}
           isQuizMode={isQuizMode}
-          theme={theme}
-          toggleTheme={toggleTheme}
+          // theme={theme}
+          // toggleTheme={toggleTheme}
         />
       </div>
 
@@ -481,8 +460,6 @@ const ChannelListContainer = ({
           setActiveProfileTab={setActiveProfileTab}
           openQuizPanel={openQuizPanel}
           isQuizMode={isQuizMode}
-          theme={theme}
-          toggleTheme={toggleTheme}
         />
       </div>
     </>

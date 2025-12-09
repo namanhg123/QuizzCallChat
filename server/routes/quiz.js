@@ -9,6 +9,20 @@ const quizController = require("../controllers/quiz");
 
 // ============ TEACHER & ADMIN ROUTES ============
 
+// AI Quiz Generation
+router.post(
+  "/generate-ai",
+  authRequired,
+  requireAdminOrTeacher,
+  quizController.generateQuizWithAI
+);
+router.post(
+  "/save-generated",
+  authRequired,
+  requireAdminOrTeacher,
+  quizController.saveGeneratedQuiz
+);
+
 // Quiz management
 router.post(
   "/",

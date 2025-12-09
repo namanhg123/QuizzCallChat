@@ -12,13 +12,14 @@ const ChannelContainer = ({
   createType,
   userRole,
   isQuizMode,
+  isCollapsed,
 }) => {
   const { channel } = useChatContext();
 
   // Nếu ở quiz mode, hiển thị ChannelQuizView
   if (isQuizMode) {
     return (
-      <div className="channel__container">
+      <div className={`channel__container ${isCollapsed ? "collapsed" : ""}`}>
         <ChannelQuizView userRole={userRole} />
       </div>
     );
@@ -26,14 +27,14 @@ const ChannelContainer = ({
 
   if (isCreating) {
     return (
-      <div className="channel__container">
+      <div className={`channel__container ${isCollapsed ? "collapsed" : ""}`}>
         <CreateChannel createType={createType} setIsCreating={setIsCreating} />
       </div>
     );
   }
   if (isEditing) {
     return (
-      <div className="channel__container">
+      <div className={`channel__container ${isCollapsed ? "collapsed" : ""}`}>
         <EditChannel setIsEditing={setIsEditing} />
       </div>
     );
@@ -51,7 +52,7 @@ const ChannelContainer = ({
   );
 
   return (
-    <div className="channel__container">
+    <div className={`channel__container ${isCollapsed ? "collapsed" : ""}`}>
       <Channel
         EmptyStateIndicator={EmptyState}
         Message={(messageProps, i) => <MessageTeam key={i} {...messageProps} />}

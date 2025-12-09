@@ -7,7 +7,7 @@ const { api_key, api_secret } = process.env;
 
 const cookies = new Cookies();
 
-export default function Profile({ activeProfileTab, onBack }) {
+export default function Profile({ activeProfileTab, onBack, isCollapsed }) {
   const [userInfo, setUserInfo] = useState({
     fullName: "",
     username: "",
@@ -544,11 +544,8 @@ export default function Profile({ activeProfileTab, onBack }) {
   );
 
   return (
-    <div className="profile-container">
+    <div className={`profile-container ${isCollapsed ? "collapsed" : ""}`}>
       <div className="profile-header">
-        <button className="back-btn" onClick={onBack}>
-          ← Quay lại Chat
-        </button>
         <h2>
           {activeProfileTab === "info"
             ? "Thông tin cá nhân"

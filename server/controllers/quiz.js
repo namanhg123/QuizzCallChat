@@ -1,6 +1,306 @@
 const Quiz = require("../models/Quiz");
 const Question = require("../models/Question");
 const Result = require("../models/Result");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// ============ AI QUIZ GENERATION ============
+
+const generateQuizWithAI = async (req, res) => {
+  try {
+    let { topics, questionCount, difficulty } = req.body;
+
+    // --- Validate topics ---
+    if (!topics) {
+      return res.status(400).json({ message: "Topics is required" });
+    }
+
+    // Normalize topics to array
+    if (typeof topics === "string") {
+      if (["all", "All", "ALL"].includes(topics)) {
+        topics = ["All"];
+      } else if (["random", "Random"].includes(topics)) {
+        topics = ["Random"];
+      } else {
+        topics = [topics];
+      }
+    }
+
+    if (!Array.isArray(topics) || topics.length === 0) {
+      return res.status(400).json({
+        message: "Topics must be an array or valid string ('All' / 'Random')",
+      });
+    }
+
+    // --- Validate question count ---
+    if (!questionCount || questionCount < 1 || questionCount > 50) {
+      return res.status(400).json({
+        message: "Question count must be between 1 and 50",
+      });
+    }
+
+    // --- Validate difficulty ---
+    if (!difficulty) {
+      return res.status(400).json({
+        message: "Difficulty is required",
+      });
+    }
+
+    // --- Check API Key ---
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if (!GEMINI_API_KEY) {
+      return res.status(500).json({
+        message: "Gemini API key missing",
+      });
+    }
+
+    console.log(
+      `[GEMINI] Requesting ${questionCount} questions | Topics: ${topics.join(", ")}, Difficulty: ${difficulty}`
+    );
+
+    // --- Prompt ---
+    const prompt = `
+You are a quiz generator. Return ONLY a pure JSON array—no markdown, no comments.
+
+Create exactly ${questionCount} multiple-choice questions on topics: ${topics.join(", ")}.
+Difficulty: ${difficulty}
+
+Each item format:
+{
+ "questionText": "string",
+ "options": ["A", "B", "C", "D"],
+ "correctAnswer": "A",
+ "explanation": "string"
+}
+
+Return JSON array only:
+`;
+
+    // --- Call Gemini ---
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    let responseObj;
+    try {
+      const result = await model.generateContent(prompt);
+      responseObj = result.response;
+    } catch (err) {
+      console.error("[GEMINI SDK ERROR]", err);
+      return res.status(500).json({
+        message: "Error calling Gemini API",
+        error: err.message,
+      });
+    }
+
+    if (!responseObj || !responseObj.text) {
+      return res.status(500).json({
+        message: "Gemini returned invalid response",
+        raw: responseObj,
+      });
+    }
+
+    let rawText = responseObj.text().trim();
+
+    // --- Clean markdown if any ---
+    rawText = rawText.replace(/```json|```/g, "").trim();
+
+    // --- Try to parse raw JSON first ---
+    let questions;
+    try {
+      questions = JSON.parse(rawText);
+    } catch {
+      // fallback: extract array between first '[' and last ']'
+      const start = rawText.indexOf("[");
+      const end = rawText.lastIndexOf("]") + 1;
+      const extracted = rawText.substring(start, end);
+
+      try {
+        questions = JSON.parse(extracted);
+      } catch (err2) {
+        return res.status(500).json({
+          message: "Invalid JSON returned by Gemini",
+          rawResponse: rawText.substring(0, 500),
+          error: err2.message,
+        });
+      }
+    }
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(500).json({
+        message: "Gemini did not return valid question array",
+      });
+    }
+
+    // --- Final validation, cleanup, normalize ---
+    const formattedQuestions = [];
+    for (const q of questions) {
+      if (!q.questionText || !Array.isArray(q.options) || q.options.length !== 4)
+        continue;
+
+      // Normalize correctAnswer
+      let correct = (q.correctAnswer || "").toString().toUpperCase();
+      correct = correct.replace(/[^A-D]/g, ""); // remove unwanted chars
+
+      if (!["A", "B", "C", "D"].includes(correct)) continue;
+
+      // Remove duplicate options
+      const uniqueOptions = [...new Set(q.options.map((o) => o.trim()))];
+      if (uniqueOptions.length !== 4) continue;
+
+      formattedQuestions.push({
+        questionText: q.questionText.trim(),
+        options: uniqueOptions,
+        correctAnswer: correct,
+        explanation: q.explanation
+          ? q.explanation.toString().trim()
+          : "No explanation provided",
+      });
+
+      if (formattedQuestions.length === questionCount) break; // ensure exact count
+    }
+
+    if (formattedQuestions.length === 0) {
+      return res.status(500).json({
+        message: "No valid questions could be parsed",
+      });
+    }
+
+    // Suggested title
+    const topicLabel =
+      topics.length <= 3 ? topics.join(", ") : `${topics.slice(0, 3).join(", ")}...`;
+
+    res.status(200).json({
+      suggestedTitle: `AI Quiz: ${topicLabel} (${difficulty})`,
+      questions: formattedQuestions,
+      metadata: {
+        topics,
+        difficulty,
+        questionCount: formattedQuestions.length,
+        requestedCount: questionCount,
+        generatedAt: new Date().toISOString(),
+      },
+    });
+  } catch (error) {
+    console.error("[GENERATE QUIZ ERROR]", error);
+    res.status(500).json({
+      message: "Unexpected server error",
+      error: error.message,
+    });
+  }
+};
+
+
+// Save AI-generated quiz to database
+const saveGeneratedQuiz = async (req, res) => {
+  try {
+    const { quizId, title, timeLimit, channelId, channelName, questions } =
+      req.body;
+
+    if (!quizId || !title || !channelId) {
+      return res.status(400).json({
+        message: "quizId, title, and channelId are required",
+      });
+    }
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "Authentication required",
+      });
+    }
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({
+        message: "Questions array cannot be empty",
+      });
+    }
+
+    const exists = await Quiz.findOne({ quizId });
+    if (exists) {
+      return res.status(400).json({
+        message: "Quiz ID already exists",
+      });
+    }
+
+    const quiz = await Quiz.create({
+      quizId,
+      title,
+      owner: req.user.id,
+      ownerName: req.user.fullName || req.user.name,
+      channelId,
+      channelName: channelName || "Unknown",
+      timeLimit: timeLimit || 0,
+      isActive: false,
+    });
+
+    const createdQuestions = [];
+    const failedQuestions = [];
+
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      try {
+        if (
+          !q.questionText ||
+          !Array.isArray(q.options) ||
+          q.options.length !== 4
+        ) {
+          failedQuestions.push({ index: i, reason: "Invalid format" });
+          continue;
+        }
+
+        // Normalize correct answer
+        let correct = q.correctAnswer?.toString().toUpperCase() || "";
+        correct = correct.replace(/[^A-D]/g, "");
+
+        if (!["A", "B", "C", "D"].includes(correct)) {
+          failedQuestions.push({ index: i, reason: "Invalid correctAnswer" });
+          continue;
+        }
+
+        const correctIndex = correct.charCodeAt(0) - 65;
+
+        const answers = q.options.map((text, index) => ({
+          text: text.trim(),
+          correct: index === correctIndex,
+        }));
+
+        await Question.create({
+          quizId,
+          question: q.questionText.trim(),
+          answers,
+          createdBy: req.user.id,
+        });
+
+        createdQuestions.push(q);
+      } catch (err) {
+        failedQuestions.push({ index: i, reason: err.message });
+      }
+    }
+
+    if (createdQuestions.length === 0) {
+      await Quiz.deleteOne({ quizId });
+      return res.status(400).json({
+        message: "No valid questions created. Quiz removed.",
+        failedQuestions,
+      });
+    }
+
+    res.status(201).json({
+      message: "Quiz saved",
+      quiz,
+      questionsCreated: createdQuestions.length,
+      totalQuestions: questions.length,
+      failedQuestions: failedQuestions.length,
+      failedDetails:
+        failedQuestions.length > 0 ? failedQuestions : undefined,
+    });
+  } catch (error) {
+    console.error("[SAVE QUIZ ERROR]", error);
+    res.status(500).json({
+      message: "Error saving quiz",
+      error: error.message,
+    });
+  }
+};
+
 
 // ============ TEACHER & ADMIN ============
 
@@ -72,12 +372,10 @@ const getQuizzesByChannel = async (req, res) => {
     res.json(quizzes);
   } catch (error) {
     console.error("[GET CHANNEL QUIZZES ERROR]", error);
-    res
-      .status(500)
-      .json({
-        message: "Error fetching channel quizzes",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error fetching channel quizzes",
+      error: error.message,
+    });
   }
 };
 
@@ -644,6 +942,10 @@ const getMyResults = async (req, res) => {
 };
 
 module.exports = {
+  // AI Generation
+  generateQuizWithAI,
+  saveGeneratedQuiz,
+
   // Teacher/Admin
   createQuiz,
   getMyQuizzes,

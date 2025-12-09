@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Cookies from "universal-cookie";
 import "./QuizDashboard.css";
+import QuizMaker from "./QuizMaker";
 
 const cookies = new Cookies();
 const API_URL = "http://localhost:5000";
 
-const QuizDashboard = ({ userRole }) => {
+const QuizDashboard = ({ userRole, isCollapsed }) => {
   const [activeTab, setActiveTab] = useState(
     userRole === "student" ? "available" : "manage"
   );
@@ -149,15 +150,25 @@ const QuizDashboard = ({ userRole }) => {
     <div className="quiz-management">
       <div className="quiz-header">
         <h2>Manage Quizzes</h2>
-        <button
-          className="btn-create"
-          onClick={() => {
-            setViewMode("create");
-            setQuizForm({ quizId: "", title: "", timeLimit: 0 });
-          }}
-        >
-          + Create New Quiz
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            className="btn-create"
+            onClick={() => {
+              setViewMode("generate");
+            }}
+          >
+            Generate Quiz
+          </button>
+          <button
+            className="btn-create"
+            onClick={() => {
+              setViewMode("create");
+              setQuizForm({ quizId: "", title: "", timeLimit: 0 });
+            }}
+          >
+            + Create New Quiz
+          </button>
+        </div>
       </div>
 
       {error && <div className="error-message">{error}</div>}
@@ -332,13 +343,42 @@ const QuizDashboard = ({ userRole }) => {
     </div>
   );
 
+  // Handle quiz generation from QuizMaker
+  const handleGenerateQuiz = async (config) => {
+    try {
+      // Here you can integrate with your AI service to generate quiz questions
+      console.log("Generating quiz with config:", config);
+      alert(
+        `Generating quiz with ${
+          config.questionCount
+        } questions on topics: ${config.topics.join(", ")} at ${
+          config.difficulty
+        } difficulty`
+      );
+      // After generation, you might want to:
+      // 1. Create the quiz
+      // 2. Add the generated questions
+      // 3. Return to list view
+      setViewMode("list");
+    } catch (error) {
+      console.error("Error generating quiz:", error);
+      throw error;
+    }
+  };
+
   // Main render
   return (
-    <div className="quiz-dashboard">
+    <div className={`quiz-dashboard ${isCollapsed ? "collapsed" : ""}`}>
       {viewMode === "list" && userRole !== "student" && renderQuizManagement()}
       {viewMode === "list" &&
         userRole === "student" &&
         renderAvailableQuizzes()}
+      {viewMode === "generate" && (
+        <QuizMaker
+          onBack={() => setViewMode("list")}
+          onGenerate={handleGenerateQuiz}
+        />
+      )}
       {viewMode === "create" && renderCreateQuiz()}
       {viewMode === "edit" && selectedQuiz && (
         <QuizEditor

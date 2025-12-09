@@ -20,6 +20,8 @@ export { default as QuizEditor } from "./QuizEditor";
 export { default as QuizTaker } from "./QuizTaker";
 export { default as QuizResults } from "./QuizResults";
 export { default as MyResults } from "./MyResults";
+export { default as QuizGenerator } from "./QuizGenerator";
+export { default as QuizMaker } from "./QuizMaker";
 
 // Video Call components
 export { default as VideoCall } from "./meeting/VideoCall";

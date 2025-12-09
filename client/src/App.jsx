@@ -51,6 +51,7 @@ const App = () => {
   const [activeAdminTab, setActiveAdminTab] = useState("users"); // "users" or "channels"
   const [activeProfileTab, setActiveProfileTab] = useState("info"); // "info" or "password"
   const [isQuizMode, setIsQuizMode] = useState(false); // Quiz mode state
+  const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar collapse state
 
   if (!authToken) return <Auth />;
   return (
@@ -70,6 +71,8 @@ const App = () => {
           setActiveProfileTab={setActiveProfileTab}
           isQuizMode={isQuizMode}
           setIsQuizMode={setIsQuizMode}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
         />
         {viewMode === "chat" ? (
           <ChannelContainer
@@ -80,16 +83,33 @@ const App = () => {
             createType={createType}
             userRole={userRole}
             isQuizMode={isQuizMode}
+            isCollapsed={isCollapsed}
           />
         ) : viewMode === "admin" ? (
-          <AdminChannelManager activeAdminTab={activeAdminTab} />
+          <div
+            className={`channel__container${isCollapsed ? " collapsed" : ""}`}
+          >
+            <AdminChannelManager
+              activeAdminTab={activeAdminTab}
+              isCollapsed={isCollapsed}
+            />
+          </div>
         ) : viewMode === "profile" ? (
-          <Profile
-            activeProfileTab={activeProfileTab}
-            onBack={() => setViewMode("chat")}
-          />
+          <div
+            className={`channel__container${isCollapsed ? " collapsed" : ""}`}
+          >
+            <Profile
+              activeProfileTab={activeProfileTab}
+              onBack={() => setViewMode("chat")}
+              isCollapsed={isCollapsed}
+            />
+          </div>
         ) : viewMode === "quiz" ? (
-          <QuizDashboard userRole={userRole} />
+          <div
+            className={`channel__container${isCollapsed ? " collapsed" : ""}`}
+          >
+            <QuizDashboard userRole={userRole} isCollapsed={isCollapsed} />
+          </div>
         ) : null}
       </Chat>
     </div>
